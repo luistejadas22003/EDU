@@ -3,60 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba de Conexión ESP32</title>
+    <title>ESP32 - Conexión Universal Dinámica</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .status { font-weight: bold; padding: 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
-        .disconnected { background-color: #ffdddd; color: #d8000c; }
-        .connected { background-color: #dff2bf; color: #4F8A10; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007BFF; color: white; border: none; border-radius: 4px; }
-        button:hover { background-color: #0056b3; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 50px; background-color: #0f172a; color: #f8fafc; }
+        .card { background: #1e293b; padding: 30px; border-radius: 12px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        .status { font-weight: bold; padding: 10px 16px; border-radius: 6px; display: inline-block; margin-bottom: 20px; font-size: 0.9rem; }
+        .disconnected { background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
+        .connected { background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid #10b981; }
+        h1 { font-size: 3rem; margin: 10px 0; color: #38bdf8; }
+        button { padding: 12px 24px; font-size: 1rem; font-weight: bold; cursor: pointer; background-color: #2563eb; color: white; border: none; border-radius: 6px; transition: background 0.2s; }
+        button:hover { background-color: #1d4ed8; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Prueba de Comunicación WebSocket</h2>
-        <div id="status" class="status disconnected">ESTADO: DESCONECTADO</div>
-        <p>Contador recibido del ESP32: <h1 id="counter">--</h1></p>
-        <p>Mensaje: <span id="msg">Esperando...</span></p>
+        <h2>Panel de Telemetría ESP32</h2>
+        <div id="status" class="status disconnected">ESTADO: BUSCANDO CONEXIÓN...</div>
+        <p>Contador en Tiempo Real:</p>
+        <h1 id="counter">--</h1>
+        <p>Estado del Servidor: <span id="msg" style="color: #94a3b8;">Esperando datos...</span></p>
         <br>
-        <button onclick="enviarMensaje()">Enviar Saludo al ESP32</button>
+        <button onclick="enviarMensaje()">Enviar Comando al ESP32</button>
     </div>
 
     <script>
         let ws;
 
         function conectar() {
-            // Detecta automáticamente si abres por IP o por esp32.local[cite: 1]
-            const host = window.location.hostname || "esp32.local";
-            const wsUri = "ws://" + host + ":81/";
+            // MAGIA DINÁMICA: Toma automáticamente el hostname actual (sea IP, dominio o esp32.local)[cite: 1]
+            // Si abres la página web desde cualquier red, se conectará al puerto 81 de ese mismo host de forma nativa.
+            const targetHost = window.location.hostname || "esp32.local";
+            const wsUri = "ws://" + targetHost + ":81/";
             
-            console.log("Intentando conectar a: " + wsUri);
+            console.log("Conectando de forma dinámica a: " + wsUri);
             ws = new WebSocket(wsUri);
 
             ws.onopen = function() {
                 let statusEl = document.getElementById("status");
                 statusEl.className = "status connected";
-                statusEl.innerText = "ESTADO: CONECTADO CORRECTAMENTE";
-                console.log("WebSocket conectado");
+                statusEl.innerText = "ESTADO: CONECTADO UNIVERSALMENTE";
             };
 
             ws.onclose = function() {
                 let statusEl = document.getElementById("status");
                 statusEl.className = "status disconnected";
                 statusEl.innerText = "ESTADO: DESCONECTADO (Reintentando...)";
-                console.log("WebSocket cerrado. Reintentando en 3 segundos...");
+                // Intenta reconectar automáticamente cada 3 segundos si cambia de red o pierde señal
                 setTimeout(conectar, 3000);
             };
 
             ws.onerror = function(error) {
-                console.error("Error en WebSocket:", error);
+                console.error("Error en socket:", error);
             };
 
             ws.onmessage = function(event) {
-                console.log("Mensaje recibido: ", event.data);
                 const data = JSON.parse(event.data);
                 document.getElementById("counter").innerText = data.contador;
                 document.getElementById("msg").innerText = data.mensaje;
@@ -65,14 +66,14 @@
 
         function enviarMensaje() {
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send("¡Hola ESP32, te saludo desde la web!");
-                alert("Mensaje enviado al ESP32. Revisa el Monitor Serie.");
+                ws.send("Comando ejecutado desde la interfaz web universal.");
+                alert("Comando enviado con éxito.");
             } else {
-                alert("No hay conexión activa con el ESP32.");
+                alert("No hay conexión activa con la placa.");
             }
         }
 
-        // Iniciar conexión al cargar la página
+        // Iniciar al cargar la ventana
         window.onload = conectar;
     </script>
 </body>
